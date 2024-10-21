@@ -133,7 +133,7 @@ class SQLite3:
         self,
         username: str,
     ) -> dict[str, str | int] | None:
-        db_con: sqlite3.Connection = self.connection()
+        db_con: sqlite3.Connection = self.connection
         print("Database: Retrieving user ...")
         sql: str = (
             "SELECT "
@@ -149,18 +149,19 @@ class SQLite3:
         }
         db_cur: sqlite3.Cursor
         db_cur_row: sqlite3.Row
-        rows: list[Row] = []
+        rows: list[sqlite3.Row] = []
         row: sqlite3.Row
         user: dict[str, str | int] = {}
         try:
             with db_con:
                 db_cur = db_con.cursor()
-                db_cur.row_factory = cast(Callable[[Cursor, Row], Row], Row)
+                db_cur.row_factory = cast(Callable[[sqlite3.Cursor,
+                    sqlite3.Row], sqlite3.Row], sqlite3.Row)
                 db_cur.execute(sql, parameters)
                 # TODO(wathne): Limit this to one iteration.
                 for db_cur_row in db_cur:
                     rows.append(db_cur_row)
-        except AnySqlite3Error as err:
+        except sqlite3.Error as err:
             print(err)
             print("Database: User retrieval failed.")
             return None
