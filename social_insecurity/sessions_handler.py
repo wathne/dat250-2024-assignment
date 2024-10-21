@@ -5,7 +5,7 @@ from flask import g # g is a LocalProxy.
 from flask import session # session is a LocalProxy.
 from flask.ctx import _AppCtxGlobals as ACG # g type.
 from flask.sessions import SecureCookieSession as SCS # session type.
-from social_insecurity import brycpt # bcrypt object initialized in __init__.py.
+from social_insecurity import bcrypt # bcrypt object initialized in __init__.py.
 from social_insecurity import sqlite # sqlite object initialized in __init__.py.
 from typing import cast
 from werkzeug.local import LocalProxy
