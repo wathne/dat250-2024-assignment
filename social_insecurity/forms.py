@@ -73,7 +73,12 @@ class RegisterForm(FlaskForm):
         render_kw={"placeholder": "Confirm Password"}, 
         validators=[DataRequired(), EqualTo('password', message="Passwords must match.")]
     )
+    
     submit = SubmitField(label="Sign Up")
+
+    def hash_password(self, bcrypt):
+        """Hashes the password using bcrypt."""
+        return bcrypt.generate_password_hash(self.password.data).decode('utf-8')
 
 class IndexForm(FlaskForm):
     """Provides the composite form for the index page."""
