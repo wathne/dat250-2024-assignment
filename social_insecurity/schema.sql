@@ -2,12 +2,12 @@
 -- Create tables
 -- --
 
-CREATE TABLE [Users] (
-  id INTEGER PRIMARY KEY,
-  username VARCHAR,
-  first_name VARCHAR,
-  last_name VARCHAR,
-  [password] VARCHAR,
+CREATE TABLE IF NOT EXISTS [Users] (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username VARCHAR UNIQUE NOT NULL,
+  first_name VARCHAR NOT NULL,
+  last_name VARCHAR NOT NULL,
+  [password] VARCHAR NOT NULL,
   education VARCHAR DEFAULT 'Unknown',
   employment VARCHAR DEFAULT 'Unknown',
   music VARCHAR DEFAULT 'Unknown',
@@ -16,31 +16,31 @@ CREATE TABLE [Users] (
   birthday DATE DEFAULT 'Unknown'
 );
 
-CREATE TABLE [Posts](
-  id INTEGER PRIMARY KEY,
-  u_id INTEGER,
+CREATE TABLE IF NOT EXISTS [Posts](
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  u_id INTEGER NOT NULL,
   content INTEGER,
   [image] VARCHAR,
-  [creation_time] DATETIME,
-  FOREIGN KEY (u_id) REFERENCES [Users](id)
+  [creation_time] DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (u_id) REFERENCES [Users](id) ON DELETE CASCADE
 );
 
-CREATE TABLE [Friends](
+CREATE TABLE IF NOT EXISTS [Friends](
   u_id INTEGER NOT NULL REFERENCES Users,
   f_id INTEGER NOT NULL REFERENCES Users,
   PRIMARY KEY(u_id, f_id),
-  FOREIGN KEY (u_id) REFERENCES [Users](id),
-  FOREIGN KEY (f_id) REFERENCES [Users](id)
+  FOREIGN KEY (u_id) REFERENCES [Users](id) ON DELETE CASCADE,
+  FOREIGN KEY (f_id) REFERENCES [Users](id) ON DELETE CASCADE
 );
 
-CREATE TABLE [Comments](
-  id INTEGER PRIMARY KEY,
-  p_id INTEGER,
-  u_id INTEGER,
+CREATE TABLE IF NOT EXISTS [Comments](
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  p_id INTEGER NOT NULL,
+  u_id INTEGER NOT NULL,
   comment VARCHAR,
   [creation_time] DATETIME,
-  FOREIGN KEY (p_id) REFERENCES Posts(id),
-  FOREIGN KEY (u_id) REFERENCES Users(id)
+  FOREIGN KEY (p_id) REFERENCES Posts(id) ON DELETE CASCADE,
+  FOREIGN KEY (u_id) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 -- --
