@@ -20,8 +20,6 @@ sqlite = SQLite3()
 bcrypt = Bcrypt()
 # TODO: Handle login management better, maybe with flask_login?
 # login = LoginManager()
-# TODO: The passwords are stored in plaintext, this is not secure at all. I should probably use bcrypt or something
-# bcrypt = Bcrypt()
 # TODO: The CSRF protection is not working, I should probably fix that
 # csrf = CSRFProtect()
 

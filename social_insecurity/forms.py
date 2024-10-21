@@ -29,7 +29,7 @@ class LoginForm(FlaskForm):
         label="Username", 
         render_kw={"placeholder": "Username"}, 
         validators=[DataRequired(), Length(min=3, max=15), 
-                    Regexp('^A-Za-z0-9!@#$%^&*.*$')] 
+                    Regexp('^[A-Za-z]*$')] 
     )
     password = PasswordField(
         label="Password", 
@@ -116,7 +116,7 @@ class FriendsForm(FlaskForm):
     username = StringField(
         label="Friend's username", 
         render_kw={"placeholder": "Username"}, 
-        validators=[DataRequired(), Length(min=3, max=20), Regexp('^[A-Za-z]*$')]
+        validators=[DataRequired(), Length(min=3, max=15), Regexp('^[A-Za-z]*$')]
     )
     submit = SubmitField(label="Add Friend")
 
@@ -127,27 +127,27 @@ class ProfileForm(FlaskForm):
     education = StringField(
         label="Education", 
         render_kw={"placeholder": "Highest education"}, 
-        validators=[Length(max=100)] 
+        validators=[Length(max=100), Regexp('^[A-Za-z]*$')] 
     )
     employment = StringField(
         label="Employment", 
         render_kw={"placeholder": "Current employment"}, 
-        validators=[Length(max=100)] 
+        validators=[Length(max=100), Regexp('^[A-Za-z]*$')]
     )
     music = StringField(
         label="Favorite song", 
         render_kw={"placeholder": "Favorite song"}, 
-        validators=[Length(max=100)] 
+        validators=[Length(max=100), Regexp('^[A-Za-z]*$')]
     )
     movie = StringField(
         label="Favorite movie", 
         render_kw={"placeholder": "Favorite movie"}, 
-        validators=[Length(max=100)]
+        validators=[Length(max=100), Regexp('^[A-Za-z]*$')]
     )
     nationality = StringField(
         label="Nationality", 
         render_kw={"placeholder": "Your nationality"}, 
-        validators=[Length(max=100)] 
+        validators=[Length(max=100), Regexp('^[A-Za-z]*$')]
     )
     birthday = DateField(label="Birthday", default=datetime.now())
     submit = SubmitField(label="Update Profile")
