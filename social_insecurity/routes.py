@@ -11,6 +11,7 @@ from flask import flash, redirect, render_template, send_from_directory, url_for
 
 from social_insecurity import sqlite
 from social_insecurity.forms import CommentsForm, FriendsForm, IndexForm, PostForm, ProfileForm
+from flask_bcrypt import Bcrypt as bcrypt
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -37,15 +38,16 @@ def index():
 
         if user is None:
             flash("Sorry, this user does not exist!", category="warning")
-        elif user["password"] != login_form.password.data:
+        elif not bcrypt.check_password_hash(user["password"], login_form.password.data):
             flash("Sorry, wrong password!", category="warning")
-        elif user["password"] == login_form.password.data:
+        else:
             return redirect(url_for("stream", username=login_form.username.data))
 
     elif register_form.is_submitted() and register_form.submit.data:
+        hashed_password = bcrypt.generate_password_hash(register_form.password.data).decode('utf-8')
         insert_user = f"""
             INSERT INTO Users (username, first_name, last_name, password)
-            VALUES ('{register_form.username.data}', '{register_form.first_name.data}', '{register_form.last_name.data}', '{register_form.password.data}');
+            VALUES ('{register_form.username.data}', '{register_form.first_name.data}', '{register_form.last_name.data}', '{hashed_password}');
             """
         sqlite.query(insert_user)
         flash("User successfully created!", category="success")
