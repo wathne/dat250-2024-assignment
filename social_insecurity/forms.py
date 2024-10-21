@@ -34,7 +34,7 @@ class LoginForm(FlaskForm):
     password = PasswordField(
         label="Password", 
         render_kw={"placeholder": "Password"}, 
-        validators=[DataRequired(), Length(min=5),
+        validators=[DataRequired(), Length(min=5, max=20),
                     Regexp('^A-Za-z0-9!@#$%^&*.*$')]
     )
     remember_me = BooleanField(label="Remember me")
@@ -65,7 +65,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField(
         label="Password", 
         render_kw={"placeholder": "Password"}, 
-        validators=[DataRequired(), Length(min=5), 
+        validators=[DataRequired(), Length(min=5, max=20), 
                     Regexp('^A-Za-z0-9!@#$%^&*.*$')]
     )
     confirm_password = PasswordField(
