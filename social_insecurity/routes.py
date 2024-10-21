@@ -8,10 +8,20 @@ from pathlib import Path
 
 from flask import current_app as app
 from flask import flash, redirect, render_template, send_from_directory, url_for
+from flask import g # g is a LocalProxy.
+from flask import session # session is a LocalProxy.
+from flask.ctx import _AppCtxGlobals as ACG # g type.
+from flask.sessions import SecureCookieSession as SCS # session type.
 
 from social_insecurity import sqlite, bcrypt
 from social_insecurity.forms import CommentsForm, FriendsForm, IndexForm, PostForm, ProfileForm
+from social_insecurity.sessions_handler import load_user
 
+from typing import cast
+
+from werkzeug.exceptions import BadRequest # 400
+from werkzeug.exceptions import Unauthorized # 401
+from werkzeug.local import LocalProxy
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
@@ -28,19 +38,41 @@ def index():
     register_form = index_form.register
 
     if login_form.is_submitted() and login_form.submit.data:
-        get_user = f"""
-            SELECT *
-            FROM Users
-            WHERE username = '{login_form.username.data}';
-            """
-        user = sqlite.query(get_user, one=True)
+        # pylint: disable=protected-access
+        username: str | None = None
+        password: str | None = None
+        if isinstance(login_form.username.data, str) and not login_form.username.data == "":
+            username = login_form.username.data
+        if isinstance(login_form.password.data, str) and not login_form.password.data == "":
+            password = login_form.password.data
+        if username is None:
+            raise BadRequest(description="No username.")
+        if password is None:
+            raise BadRequest(description="No password.")
 
+        # Set login credentials in the Secure Cookie Session (SCS).
+        scs: SCS = cast(LocalProxy[SCS], session)._get_current_object()
+        scs["username"] = username
+        scs["password"] = password
+
+        # load_user() will validate the cookie session against the database.
+        load_user()
+
+        acg: ACG = cast(LocalProxy[ACG], g)._get_current_object()
+        print(f"Login as user_id: {acg.user_id}.")
+        if acg.user_id is None:
+            raise Unauthorized(description="Not logged in.")
+        return redirect(url_for("stream", username=login_form.username.data))
+
+        #TODO(wathne): Use the stuff below.
+        '''
         if user is None:
             flash("Sorry, this user does not exist!", category="warning")
         elif not bcrypt.check_password_hash(user["password"], login_form.password.data):
             flash("Sorry, wrong password!", category="warning")
         else:
             return redirect(url_for("stream", username=login_form.username.data))
+        '''
 
     elif register_form.is_submitted() and register_form.submit.data:
         hashed_password = register_form.hash_password(bcrypt)
