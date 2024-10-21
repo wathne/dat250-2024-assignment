@@ -13,7 +13,7 @@ from social_insecurity.config import Config
 from social_insecurity.database import SQLite3
 
 # from flask_login import LoginManager
-# from flask_bcrypt import Bcrypt
+from flask_bcrypt import Bcrypt as bcrypt
 # from flask_wtf.csrf import CSRFProtect
 
 sqlite = SQLite3()
@@ -34,7 +34,7 @@ def create_app(test_config=None) -> Flask:
 
     sqlite.init_app(app, schema="schema.sql")
     # login.init_app(app)
-    # bcrypt.init_app(app)
+    bcrypt.init_app(app)
     # csrf.init_app(app)
 
     with app.app_context():
