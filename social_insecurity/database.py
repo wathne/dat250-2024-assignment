@@ -12,6 +12,7 @@ Example:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import sqlite3
 from os import PathLike
 from pathlib import Path
@@ -127,6 +128,63 @@ class SQLite3:
         return response
 
     # TODO: Add more specific query methods to simplify code
+
+    def retrieve_user_by_username(
+        self,
+        username: str,
+    ) -> dict[str, str | int] | None:
+        db_con: sqlite3.Connection = self.connection()
+        print("Database: Retrieving user ...")
+        sql: str = (
+            "SELECT "
+                "id, "
+                "username, "
+                "password, "
+                "first_name, "
+                "last_name"
+            " FROM Users WHERE username = :username;"
+        )
+        parameters: dict[str, str] = {
+            "username": username,
+        }
+        db_cur: sqlite3.Cursor
+        db_cur_row: sqlite3.Row
+        rows: list[Row] = []
+        row: sqlite3.Row
+        user: dict[str, str | int] = {}
+        try:
+            with db_con:
+                db_cur = db_con.cursor()
+                db_cur.row_factory = cast(Callable[[Cursor, Row], Row], Row)
+                db_cur.execute(sql, parameters)
+                # TODO(wathne): Limit this to one iteration.
+                for db_cur_row in db_cur:
+                    rows.append(db_cur_row)
+        except AnySqlite3Error as err:
+            print(err)
+            print("Database: User retrieval failed.")
+            return None
+        else:
+            if not rows:
+                print("Database: List of retrieved rows is empty.")
+                print("Database: User retrieval failed.")
+                return None
+            row = rows[0]
+            try:
+                user["id"] = int(row["id"])
+            except (TypeError, ValueError) as int_error:
+                print(int_error)
+                print("Database: User retrieval failed.")
+                return None
+            user["username"] = str(row["username"])
+            user["password"] = str(row["password"])
+            user["first_name"] = str(row["first_name"])
+            user["last_name"] = str(row["last_name"])
+            print("Database: User retrieval completed successfully.")
+            return user
+        finally:
+            # The finally clause is always executed on the way out.
+            db_cur.close()
 
     def _init_database(self, schema: PathLike | str) -> None:
         """Initializes the database with the supplied schema if it does not exist yet."""
