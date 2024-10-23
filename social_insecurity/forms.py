@@ -6,6 +6,8 @@ It is imported by the social_insecurity package.
 
 from datetime import datetime
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed
+from config import Config
 from wtforms import (
     BooleanField,
     DateField,
@@ -108,7 +110,12 @@ class PostForm(FlaskForm):
             Regexp('^[A-Za-z ]*$', message="Post content can only contain letters and spaces.")
         ]
     )
-    image = FileField(label="Image")
+    image = FileField(
+        label="Image", 
+        validators=[
+            FileAllowed(Config.ALLOWED_EXTENSIONS, message=f"Only image files ({', '.join(Config.ALLOWED_EXTENSIONS)}) are allowed.")
+        ]
+    )
     submit = SubmitField(label="Post")
 
 
