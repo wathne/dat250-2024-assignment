@@ -74,7 +74,7 @@ def index():
             return redirect(url_for("stream", username=login_form.username.data))
         '''
 
-    elif register_form.is_submitted() and register_form.submit.data:
+    elif register_form.validate_on_submit() and register_form.submit.data:
         hashed_password = register_form.hash_password(bcrypt)
         insert_user = f"""
             INSERT INTO Users (username, first_name, last_name, password)
@@ -103,7 +103,7 @@ def stream(username: str):
         """
     user = sqlite.query(get_user, one=True)
 
-    if post_form.is_submitted():
+    if post_form.validate_on_submit():
         if post_form.image.data:
             path = Path(app.instance_path) / app.config["UPLOADS_FOLDER_PATH"] / post_form.image.data.filename
             post_form.image.data.save(path)
@@ -141,7 +141,7 @@ def comments(username: str, post_id: int):
         """
     user = sqlite.query(get_user, one=True)
 
-    if comments_form.is_submitted():
+    if comments_form.validate_on_submit():
         insert_comment = f"""
             INSERT INTO Comments (p_id, u_id, comment, creation_time)
             VALUES ({post_id}, {user["id"]}, '{comments_form.comment.data}', CURRENT_TIMESTAMP);
@@ -182,7 +182,7 @@ def friends(username: str):
         """
     user = sqlite.query(get_user, one=True)
 
-    if friends_form.is_submitted():
+    if friends_form.validate_on_submit():
         get_friend = f"""
             SELECT *
             FROM Users
@@ -235,7 +235,7 @@ def profile(username: str):
         """
     user = sqlite.query(get_user, one=True)
 
-    if profile_form.is_submitted():
+    if profile_form.validate_on_submit():
         update_profile = f"""
             UPDATE Users
             SET education='{profile_form.education.data}', employment='{profile_form.employment.data}',

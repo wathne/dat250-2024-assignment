@@ -22,5 +22,5 @@ class Config:
     SECRET_KEY = secrets.token_hex()
     SQLITE3_DATABASE_PATH = "sqlite3.db"  # Path relative to the Flask instance folder
     UPLOADS_FOLDER_PATH = "uploads"  # Path relative to the Flask instance folder
-    ALLOWED_EXTENSIONS = {}  # TODO: Might use this at some point, probably don't want people to upload any file type
+    ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
     WTF_CSRF_ENABLED = False  # TODO: I should probably implement this wtforms feature, but it's not a priority
