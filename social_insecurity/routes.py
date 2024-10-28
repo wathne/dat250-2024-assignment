@@ -20,7 +20,7 @@ from social_insecurity.sessions_handler import load_user
 from typing import cast
 
 from werkzeug.exceptions import BadRequest # 400
-from werkzeug.exceptions import Unauthorized # 401
+#from werkzeug.exceptions import Unauthorized # 401
 from werkzeug.local import LocalProxy
 
 @app.route("/", methods=["GET", "POST"])
@@ -38,51 +38,76 @@ def index():
     register_form = index_form.register
 
     if login_form.is_submitted() and login_form.submit.data:
-        # pylint: disable=protected-access
-        username: str | None = None
-        password: str | None = None
-        if isinstance(login_form.username.data, str) and not login_form.username.data == "":
-            username = login_form.username.data
-        if isinstance(login_form.password.data, str) and not login_form.password.data == "":
-            password = login_form.password.data
-        if username is None:
-            raise BadRequest(description="No username.")
-        if password is None:
-            raise BadRequest(description="No password.")
-
-        # Set login credentials in the Secure Cookie Session (SCS).
-        scs: SCS = cast(LocalProxy[SCS], session)._get_current_object()
-        scs["username"] = username
-        scs["password"] = password
-
-        # load_user() will validate the cookie session against the database.
-        load_user()
-
-        acg: ACG = cast(LocalProxy[ACG], g)._get_current_object()
-        print(f"Login as user_id: {acg.user_id}.")
-        if acg.user_id is None:
-            raise Unauthorized(description="Not logged in.")
-        return redirect(url_for("stream", username=login_form.username.data))
-
-        #TODO(wathne): Use the stuff below.
-        '''
-        if user is None:
-            flash("Sorry, this user does not exist!", category="warning")
-        elif not bcrypt.check_password_hash(user["password"], login_form.password.data):
-            flash("Sorry, wrong password!", category="warning")
+        if not login_form.validate_on_submit():
+            flash("Your submitted form data is not valid.", category="warning")
         else:
-            return redirect(url_for("stream", username=login_form.username.data))
-        '''
+            # Retrieve login credentials from the login form data.
+            username: str | None = None
+            password: str | None = None
+            if (isinstance(login_form.username.data, str)
+                    and not login_form.username.data == ""):
+                username = login_form.username.data
+            if (isinstance(login_form.password.data, str)
+                    and not login_form.password.data == ""):
+                password = login_form.password.data
+            if username is None:
+                raise BadRequest(description="No username.")
+            if password is None:
+                raise BadRequest(description="No password.")
 
-    elif register_form.validate_on_submit() and register_form.submit.data:
-        hashed_password = register_form.hash_password(bcrypt)
-        insert_user = f"""
-            INSERT INTO Users (username, first_name, last_name, password)
-            VALUES ('{register_form.username.data}', '{register_form.first_name.data}', '{register_form.last_name.data}', '{hashed_password}');
-            """
-        sqlite.query(insert_user)
-        flash("User successfully created!", category="success")
-        return redirect(url_for("index"))
+            # Set login credentials in the Secure Cookie Session (SCS).
+            # pylint: disable=protected-access
+            scs: SCS = cast(LocalProxy[SCS], session)._get_current_object()
+            scs["username"] = username
+            scs["password"] = password
+
+            # load_user() will validate the cookie session against the SQLite3
+            # database.
+            load_user()
+
+            # Retrieve user data from the Application Context Globals (ACG).
+            # acg.user_id is an Application Context Global (ACG) variable. This
+            # global variable will indicate if the user has a valid cookie
+            # session.
+            # acg.user_id is set to None if load_user() failed a check.
+            # acg.user_id is set to an integer if load_user() passed all checks.
+            # pylint: disable=protected-access
+            acg: ACG = cast(LocalProxy[ACG], g)._get_current_object()
+            if acg.user_id is None:
+                print("Login failed.")
+                flash(
+                    "Your login credentials are not valid.",
+                    category="warning",
+                )
+                #raise Unauthorized(description="Not logged in.")
+            else:
+                print(f"Login as user_id: {acg.user_id}.")
+                flash((
+                    f"You are logged in as {acg.user_username}"
+                    f" with user id {acg.user_id}."
+                    ),
+                    category="info",
+                )
+                return redirect(url_for(
+                    "stream",
+                    username=login_form.username.data,
+                ))
+            #TODO(wathne): Should we use these original flash messages?
+            # flash("Sorry, this user does not exist!", category="warning")
+            # flash("Sorry, wrong password!", category="warning")
+
+    elif register_form.is_submitted() and register_form.submit.data:
+        if not register_form.validate_on_submit():
+            flash("Your submitted form data is not valid.", category="warning")
+        else:
+            hashed_password = register_form.hash_password(bcrypt)
+            insert_user = f"""
+                INSERT INTO Users (username, first_name, last_name, password)
+                VALUES ('{register_form.username.data}', '{register_form.first_name.data}', '{register_form.last_name.data}', '{hashed_password}');
+                """
+            sqlite.query(insert_user)
+            flash("User successfully created!", category="success")
+            return redirect(url_for("index"))
 
     return render_template("index.html.j2", title="Welcome", form=index_form)
 
