@@ -20,7 +20,7 @@ from social_insecurity.sessions_handler import load_user
 from typing import cast
 
 from werkzeug.exceptions import BadRequest # 400
-#from werkzeug.exceptions import Unauthorized # 401
+from werkzeug.exceptions import Unauthorized # 401
 from werkzeug.local import LocalProxy
 
 @app.route("/", methods=["GET", "POST"])
@@ -199,6 +199,15 @@ def friends(username: str):
 
     Otherwise, it reads the username from the URL and displays all friends of the user.
     """
+
+    load_user()
+    # pylint: disable=protected-access
+    acg: ACG = cast(LocalProxy[ACG], g)._get_current_object()
+    if acg.user_id is None:
+        raise Unauthorized(description="Not logged in.")
+    if acg.user_username != username:
+        raise Unauthorized(description=(f"Not logged in as {username}."))
+
     friends_form = FriendsForm()
     get_user = f"""
         SELECT *
@@ -252,6 +261,15 @@ def profile(username: str):
 
     Otherwise, it reads the username from the URL and displays the user's profile.
     """
+
+    load_user()
+    # pylint: disable=protected-access
+    acg: ACG = cast(LocalProxy[ACG], g)._get_current_object()
+    if acg.user_id is None:
+        raise Unauthorized(description="Not logged in.")
+    if acg.user_username != username:
+        raise Unauthorized(description=(f"Not logged in as {username}."))
+
     profile_form = ProfileForm()
     get_user = f"""
         SELECT *
