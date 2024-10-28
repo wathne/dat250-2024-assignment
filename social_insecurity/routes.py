@@ -22,6 +22,7 @@ from typing import cast
 from werkzeug.exceptions import BadRequest # 400
 from werkzeug.exceptions import Unauthorized # 401
 from werkzeug.local import LocalProxy
+from werkzeug.utils import secure_filename
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
@@ -129,13 +130,14 @@ def stream(username: str):
     user = sqlite.query(get_user, one=True)
 
     if post_form.validate_on_submit():
+        secure_filename_: str = secure_filename(filename=post_form.image.data.filename)
         if post_form.image.data:
-            path = Path(app.instance_path) / app.config["UPLOADS_FOLDER_PATH"] / post_form.image.data.filename
+            path = Path(app.instance_path) / app.config["UPLOADS_FOLDER_PATH"] / secure_filename_
             post_form.image.data.save(path)
 
         insert_post = f"""
             INSERT INTO Posts (u_id, content, image, creation_time)
-            VALUES ({user["id"]}, '{post_form.content.data}', '{post_form.image.data.filename}', CURRENT_TIMESTAMP);
+            VALUES ({user["id"]}, '{post_form.content.data}', '{secure_filename_}', CURRENT_TIMESTAMP);
             """
         sqlite.query(insert_post)
         return redirect(url_for("stream", username=username))
