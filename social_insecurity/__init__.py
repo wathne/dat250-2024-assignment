@@ -14,14 +14,14 @@ from social_insecurity.database import SQLite3
 
 # from flask_login import LoginManager
 from flask_bcrypt import Bcrypt 
-# from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect
 
 sqlite = SQLite3()
 bcrypt = Bcrypt()
 # TODO: Handle login management better, maybe with flask_login?
 # login = LoginManager()
 # TODO: The CSRF protection is not working, I should probably fix that
-# csrf = CSRFProtect()
+csrf = CSRFProtect()
 
 
 def create_app(test_config=None) -> Flask:
@@ -34,7 +34,7 @@ def create_app(test_config=None) -> Flask:
     sqlite.init_app(app, schema="schema.sql")
     bcrypt.init_app(app)
     # login.init_app(app)
-    # csrf.init_app(app)
+    csrf.init_app(app)
 
     with app.app_context():
         create_uploads_folder(app)
