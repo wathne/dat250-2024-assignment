@@ -7,7 +7,7 @@ from pathlib import Path
 from shutil import rmtree
 from typing import cast
 
-from flask import Flask, current_app
+from flask import Flask, current_app, Response
 
 from social_insecurity.config import Config
 from social_insecurity.database import SQLite3
@@ -46,6 +46,11 @@ def create_app(test_config=None) -> Flask:
         if instance_path.exists():
             rmtree(instance_path)
 
+    @app.after_request
+    def add_security_headers(response: Response) -> Response:
+        response.headers['X-Frame-Options'] = 'DENY'  # Prevents clickjacking
+        return response
+    
     with app.app_context():
         import social_insecurity.routes  # noqa: E402,F401
 
