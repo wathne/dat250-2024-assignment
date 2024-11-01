@@ -5,9 +5,9 @@ It is imported by the social_insecurity package.
 """
 
 from datetime import datetime
+from flask import current_app as app
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from config import Config
 from wtforms import (
     BooleanField,
     DateField,
@@ -111,10 +111,16 @@ class PostForm(FlaskForm):
         ]
     )
     image = FileField(
-        label="Image", 
+        label="Image",
         validators=[
-            FileAllowed(Config.ALLOWED_EXTENSIONS, message=f"Only image files ({', '.join(Config.ALLOWED_EXTENSIONS)}) are allowed.")
-        ]
+            FileAllowed(
+                app.config.get('ALLOWED_EXTENSIONS'),
+                message=(
+                    f"Only image files ("
+                    f"{', '.join(app.config.get('ALLOWED_EXTENSIONS'))}"
+                    f") are allowed."),
+            )
+        ],
     )
     submit = SubmitField(label="Post")
 
