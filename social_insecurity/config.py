@@ -24,3 +24,6 @@ class Config:
     UPLOADS_FOLDER_PATH = "uploads"  # Path relative to the Flask instance folder
     ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
     WTF_CSRF_ENABLED = True  # TODO: I should probably implement this wtforms feature, but it's not a priority
+    SESSION_COOKIE_SECURE=True
+    SESSION_COOKIE_HTTPONLY=True
+    SESSION_COOKIE_SAMESITE='Strict'
