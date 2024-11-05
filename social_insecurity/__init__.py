@@ -48,9 +48,20 @@ def create_app(test_config=None) -> Flask:
 
     @app.after_request
     def add_security_headers(response: Response) -> Response:
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' https://cdn.jsdelivr.net https://maxcdn.bootstrapcdn.com; "
+            "style-src 'self' https://cdn.jsdelivr.net https://maxcdn.bootstrapcdn.com 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "font-src 'self' https://cdn.jsdelivr.net; "
+            "connect-src 'self'; "
+            "frame-src 'none';"
+            "frame-ancestors 'self'; "   # Restrict embedding to same origin
+            "form-action 'self'; "       # Restrict form submissions to same origin
+        )
+        response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'  # Prevents clickjacking
         return response
-    
     with app.app_context():
         import social_insecurity.routes  # noqa: E402,F401
 
